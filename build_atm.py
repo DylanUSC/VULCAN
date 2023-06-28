@@ -167,14 +167,43 @@ class InitialAbun(object):
             print ("Initializing with compositions from the prvious run " + vulcan_cfg.vul_ini)
             with open(vulcan_cfg.vul_ini, 'rb') as handle:
               vul_data = pickle.load(handle) 
-            
+
+
+#  ########################################################################           
+#             #y_ini = np.copy(vul_data['variable']['y'])
+#             #data_var.y = np.copy(y_ini)
+#             for sp in species:
+#                 if sp in vul_data['variable']['species']:
+#                     y_ini[:,species.index(sp)] = vul_data['variable']['y'][:,vul_data['variable']['species'].index(sp)]
+#                 else: print (sp + " not included in the prvious run.") 
+# ########################################################################           
+
+
+ ########################################################################   
+ # %/06272023 Ziyu: change this accommodate any nz if it's not consistent wiht the current nz        
             #y_ini = np.copy(vul_data['variable']['y'])
             #data_var.y = np.copy(y_ini)
             for sp in species:
                 if sp in vul_data['variable']['species']:
                     y_ini[:,species.index(sp)] = vul_data['variable']['y'][:,vul_data['variable']['species'].index(sp)]
                 else: print (sp + " not included in the prvious run.") 
-            
+
+            yini_load = {}
+            for sp in species:
+                if sp in vul_data['variable']['species']:
+                    yini = vul_data['variable']['y'][:,vul_data['variable']['species'].index(sp)]
+                    yini_load[sp] = interpolate.interp1d(vul_data['variable']['pco'],yini, assume_sorted = False, bounds_error=False,\
+             fill_value=(T_file[np.argmin(yini)], T_file[np.argmax(yini)] ) )
+                    y_ini[:,species.index(sp)] = yini_load[sp](data_atm.pco)
+                else: print (sp + " not included in the prvious run.") 
+    
+
+
+                
+########################################################################           
+
+
+
             #if vulcan_cfg.use_ion == True: charge_list = vul_data['variable']['charge_list']
             if vulcan_cfg.use_ion == True:
                 for sp in species: 
